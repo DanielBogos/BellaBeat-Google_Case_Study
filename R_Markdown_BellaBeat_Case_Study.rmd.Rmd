@@ -1,0 +1,278 @@
+---
+title: "Women Health Company case study"
+author: "Daniel Bogos"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r functions, message = FALSE, warnings = FALSE, echo = FALSE}
+#Importing libraries and data
+library(tidyverse)
+library(readxl)
+library(ggplot2)
+library(googledrive)
+library(scales)
+library(knitr)
+
+knitr::opts_knit$set(root.dir = "C:/Users/danbg/Desktop/Google Course/Case_study_health_company")
+
+
+
+daily_activities_may <- 
+  read_csv("C:/Users/danbg/Desktop/Google Course/Case_study_health_company/daily_activities_may.csv.csv")
+
+```
+
+# R Markdown: Case study of a wellness technology company
+
+## Introduction
+**Bellabeat** is a a high-tech company that manufactures health-focused smart products for women.
+Despite the fact that Bellabeat is a successful small company, they have the potential to become a larger player in the global smart device market.    
+ Since it was founded in 2013, Bellabeat has grown rapidly and quickly positioned itself as a tech-driven wellness company for women.   
+ 
+**Mission of the company**: Helping women with knowledge about their own health and habits.
+This is achieved through a series of products such:    
+1. *Bellabeat app*: provides data related to their activity, sleep, stress, menstrual cycle, and mindfulness habits.   
+2. *Leaf*: A tracker that can be worn as a bracelet, necklace, or clip. It tracks activity, sleep, and stress.   
+3. *Time*: A watch that also can track user`s activity, sleep, and stress.   
+4. *Spring*: A water bottle that tracks daily water intake.   
+5. *Bellabeat membership*: Membership gives users 24/7 access to fully personalized guidance on nutrition, activity, sleep, health, beauty and mindfulness based on their lifestyle and goals.   
+
+**Current marketing strategies**:   
+1. *Digital marketing* (primarely):   
+ + Google search,   
+ + YouTube ads,   
+ + maintaining active Facebook and Instagram pages,   
+ + engaging with the customers on social media networks;   
+2. *Traditional advertising media*: TV, radio, billboards, print.   
+
+**GOAL** : To identify any potential opportunities for growth by looking at the data recorded by one of the Bellabeat`s products. The data contains information about the sleep patterns, calories burned, activity patterns and daily steps by 33 volunteers.   
+
+**Aproach**: Identify any patterns in the data and quantify correlations between different metrics (calories, steps, sleep, etc). This will give us few insights about any area where the company can focus and develop a marketing plan.   
+
+**Data**: The dataset includes multiple files containing a wide range of information on sleep, activity, calorie burned, heart rate (BPM), and more. It is divided into two files: one covering March to April and the other spanning April to May. To ensure the integrity and reliability of the analysis, I will focus on the April-May dataset because it has fewer missing values and its much more complete.
+
+## Part 1: Introduction
+
+Before we dive into the analysis, here is a table with the averages of a few measurements of the people who participated in this experiment.
+
+```{r, Averages, message = FALSE, warnings = FALSE, echo=FALSE}
+daily_activities <- daily_activities_may %>%
+  mutate(activity_min = FairlyActiveMinutes + VeryActiveMinutes)
+all_averages <- daily_activities %>%
+  summarise(Calories = mean(Calories, na.rm = TRUE),
+            Steps = mean(Steps, na.rm = TRUE),
+            Activity = mean(activity_min, na.rm = TRUE),
+            Running_miles = mean(VeryActiveDistance, na.rm = TRUE),
+            Sedentary_hrs = mean(Sedentary_hours, na.rm = TRUE))
+
+all_averages <- all_averages %>%
+  mutate(Calories = as.integer(Calories),
+         Steps = as.integer(Steps),
+         Activity = as.integer(Activity),
+         Running_miles = round(Running_miles, 2),
+         Sedentary_hrs = round(Sedentary_hrs))
+
+all_averages$Weight_lb <- 158
+all_averages$Weight_kg <- 72
+all_averages$Sleep <- 7
+all_averages$BMI <- 25.4
+
+kable(all_averages, caption = "Average of various metrics")
+```
+
+What the above table is telling us?   
+Well, to start with, its safe to say that the values are somewhat ok. By checking the website [click here](http://calculator.net), 2300 calories are enough to maintain the body weight but not enough to lose significant weight. Same goes for the weight (its slightly less then USA average women weight).  
+*Note:* We calculated the average weight based on data from only 8 participants, as the information for the remaining participants is unavailable.    
+Regarding activity levels, the participants were not very active, with an average sedentary time of 16 hours, including sleep. The remaining 8 hours are likely spent at work. It appears that the participants could benefit from incorporating more physical activity into their daily routines.       
+The same applies to the number of steps, 8,000 is slightly lower than the minimum amount typically recommended by fitness experts. 
+The last thing to touch is the relatively high BMI index (body mass index) of 25.4. For women of 72 kg, the BMI should fall between 18-24 for a healthy body mass. Definitely we are a bit above the limit of 24 BMI
+
+## Part 2: Calories
+
+Coming back to calories. lets have a look at the consumption of calories by every day of the week.
+
+![](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Distribution of calories per weekday.png)
+
+Above, we don`t see any significant pattern. We have slightly higher values at the beginning of the week and Saturdays.   
+We can assume that the participants have determination to be active at the beginning of the week and this slowly dies over the week with the exception of Saturday (mostly because its a day off).   
+We can fix that and motivate them to be active throughout the week.   
+
+When it comes to the distribution of the calories, most women burn between 2000 and 3000 calories per day as seen below:
+
+![Description](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Distribution of Calories.jpg)
+
+This scatter plot shows in more detail how much each participant burns calories on average.
+
+![Scatter plot](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Average_calories_per_person.png) 
+
+We do notice that most of the values fall between 2000 and 3000, which is a good range, however there are quite a few people that burn less then 2000 calories. That can represent an area where the company might want to focus on:  
+**Keeping women motivated to stay active throughout the week will lead to a higher number of calories burned.**   
+
+
+## Part 3: BMi (Body Mass Index)
+
+To begin with, the BMI data was received from only 13 participants and the average BMI is about 25.4, definitely in the upper range. That is an indication that the body weight is a bit higher then the recommended values.     
+The Participants have BMI values ranging  between 21.4 and 25.7, as seen below:
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/BMI.jpg)
+
+It is evident that the majority of values are above the healthy range, which is an important factor to consider.
+
+
+## Part 4: Steps, intensive activity and running   
+
+### Steps
+
+Let`s start with the distribution of steps:   
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Distribution of Steps.jpg)   
+
+*Findings:*    
+- very small percentage have actually more than 10k steps a day on average (**only 21%**),   
+- majority have between 7k and 10k steps a day.   
+This highlights a clear area for improvement. Ideally, the target should be around 10k–11k steps per day.  
+
+When we examine the day of the week, the results closely resemble the distribution of calories burned across each day.   
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Distribution of steps per weekday.png)
+
+Based on the above chart, we can identify a correlation between calories consumption and number of steps. More steps will lead towards more burned calories.   
+
+### Activity
+
+If we look at the average activity time of the participants (fairly and intensive activity), I found this:     
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Distribution of activity types.jpeg)
+
+We observe that the vast majority of the participants are highly active for less than 10 minutes a day and moderately active for 10 to 30 minutes. It make sense since the women show inactivity for at least 16 hours a day excluding the work job.    
+
+### Running
+
+When looking at how much the participants are running every day on average, the results are somewhat underwhelming. Despite the relatively higher average distance of 1.6 miles per day, most participants don`t run more than 1 mile and that can also be improved.    
+
+![](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Average run per person.png)
+
+Looking at the running distance per weekday, we do see similar pattern as before. The start of the week has bigger values, yet in the weekend, the participants are not that active (particularly Friday and Sunday).    
+
+**Conclusion:** It appears that participants are relatively active at the start of the week but tend to become less active as the week progresses, with the exception of Saturdays. This is intriguing, as I anticipated weekends to be the prime time for sports, exercise, gym sessions, and other fitness activities.    
+
+## Part 5: Sleep
+
+In this chapter, let`s have a look at some various charts that focus on the quality of the sleep.  
+In the table presented at the beginning of this presentation, we see that the average sleep is about 7 hours.   
+*Note:* The data collected includes data from approximately 21 participants, which should provide enough information to gain some valuable insights.    
+
+To begin with, it's important to note that the recorded sleep time represents the total sleep accumulated over a day. Additionally, along all days, 10% of the time I encountered 2 sleeps sessions a day, likely an afternoon nap, as seen below:   
+
+![](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Picture2.jpg)
+
+To start with, 7 hours is widely regarded as the minimum threshold. The chart below clearly shows that a significant number of people sleep, on average, less than 7 hours—and some even less than 6 hours (of course we ignore the outlier since no one can survive with 2 hours of sleep)
+
+![](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Average sleep per person.png)
+
+I think so far, this is the biggest concern and Bellabeat can make efforts in addressing this issue with the right marketing strategy.    
+More over, we do see a significant time spent in bed before falling asleep. The average time is about 38-40 minutes which is considered pretty high. Overall, it ranges between 3 minute and it goes as high as 4 hours. Here is a scatter plot to visualize the discrepancy:
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Time in Bed Awake.jpg)
+
+We notice that the majority spend about 30 minute in bed with a good percentage spending close to 1 hour.   
+
+*Note:* We notice that the chart has a few values that fall way higher then anyone else (between 2 and 4 hours). Majority belong to a single person which likes to spend a lot of time in bed before sleep but very little time actually sleeping - *about 5 hours.*
+That made me thinking about the following: if the time in bed awake increases, will the sleep itself be shorter:   
+It turns out, I could not find any clear pattern, only a slight positive correlation.
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Correlation sleep vs not asleep.png)
+
+We don`t see much but, if we remove our friend who spends a lot of time in bed, we get this:   
+ 
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Correlation Sleep vs awake in bed.png)
+
+Contrary my theory, more time spent awake in bed results in longer sleep sessions (0.31 correlation score is a strong one)
+
+## Part 6: Correlation between various metrics
+
+### Calories vs activity/steps/running
+
+
+We all know that the majority of daily calories, around 60–70% are primarily used for core processes that sustain life. It’s interesting to figure it out how women choose to burn their remaining calories and whether there’s a preferred method for doing so.   
+
+We find a positive correlation between the length of activity and the number of calories burned.   Lets have a look:  
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Correlation_between_cal_activity.jpg)
+
+A similar pattern emerges when examining the average number of steps, although the correlation score is slightly lower, as the chart illustrates.   
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Correlation_between_cal_steps.jpg)
+
+Finally, we observe a very similar pattern when analyzing the running activity.   
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Running_vs_calories.jpg)
+
+To sum up all above, we do acknowledged the followings:   
+- all 3 activities represent a great way to bun calories and all have a positive correlation;   
+- based on these patterns, we can safely conclude that the preferred way to burn calories is through fairly and very intensive activities, most likely gym workouts and fitness training;   
+- second preferred activity is running and lastly, walking;
+
+
+### Steps vs sedentary time
+
+When I put together the number of steps and sedentary time, I found a weak negative correlation of -0.19 (0 means no correlation and 1 or -1 means very strong correlation). 
+
+![ ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Steps_vs_sedentary.jpg)
+
+If we ignore the left side of the chart, an intriguing pattern emerges on the right side of the chart, where sedentary time exceeds 16 hours. Here, we observe a strong negative correlation, nearly a perfect one.
+
+**Conclusion**: Participants who spend more than 16 hours a day sleeping or being inactive tend to take fewer steps, with longer sedentary periods correlating to lower step counts. However, this pattern does not hold for calories burned. Interestingly, extended sedentary time does not consistently result in fewer calories burned, as the correlation is close to zero (-0.12).
+
+### Sleep vs steps/activity
+
+Putting together the sleep against the number of steps and activity length, I could not find any strong  correlation as seen in the below charts.
+
+![Sleep vs Steps ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Correlation between Sleep and Steps.png)
+
+![Sleep vs Activity ](C:/Users/danbg/Desktop/Google Course/Case_study_health_company/Correlation between sleep and activity.png)
+
+## Final Conclusion
+
+Before presenting any strategic proposals, I will summarize all the findings:   
+1. Participants demonstrate a greater interest in engaging in more physical activities (such as walking, running, and fitness) at the start of the week. However, from Wednesday onward, overall activity levels decrease, leading to a drop in calories burned, with the exception of Saturday, when there is a slight increase in activity;   
+2. Weekends are not active enough, despite having a time off from the job;   
+3. The sleep overall is neglected, with an average of only 7 hours;   
+4. The time spent in bed awake is about 40 minutes which can be reduced for longer and better quality sleep;   
+5. Longer intensive activities (gym and fitness), along with walking and running, clearly contribute to a more effective calorie burn.   
+6. Among all activities, the strongest correlation is observed between calories burned and intensive fitness activities.  
+7. Lastly, given the average sedentary time of 15 hours and adding the time spent at work, we can see that in general, the participants are not spending much time being active and that can be a cause of relatively high BMI index (25.4).
+
+**Strategies proposal**
+
+The company has effectively leveraged marketing strategies and engaged with customers online, fueling its growth over the years. Bellabeat offers diverse products to help women track aspects of their health like stress, sleep, and menstrual cycles.   
+While the website reflects the company’s dedication to women’s health, data suggests that many users don’t have particularly healthy or active lifestyles. The products excel in tracking health metrics but may fall in inspiring users to adopt healthier habits, a core mission for such a company.
+
+**Solution:** Making the products more interactive, particularly the app. The customers aside data about their body, they also need a motivation to be more active, walk more, sleep better and burn more calories. 
+
+**Few ideas**:   
+1. A paid membership where the women get more personalized help when it comes to their sleep quality. Maybe challenge them to spend less time on their phone before sleep or if they manage to sleep the desired 7.5 or 8 hours over a period of time, they get a reward (maybe a discount for one of their products).   
+2. Online content via YouTube or any platform about different aspects of women's health. Even a monthly membership to gain access to these insightful videos could be a great idea.
+3. Data indicates that women burn the most calories through intensive activities such as fitness, gym workouts and running. Developing products to support these activities could be an effective way to encourage women to maintain their commitment to such routines:    
+ - towels (with motivational motto`s),   
+ - water bottles equipped with sensors could measure the amount of water consumed during an activity and, by connecting to an app, determine if the hydration level is sufficient,    
+ - comfortable wristwatches that track time, function as timers, and support various activities like fitness, yoga, swimming, and gym workouts without causing discomfort.    
+
+*Final note:* Even though, the data was big enough to make a thorough analysis, I've only analysed a month period time. In the same note, There were many missing data regarding the weight and age of the participants that could lead to a slight different results. 
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
